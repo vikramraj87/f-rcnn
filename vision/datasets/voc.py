@@ -18,7 +18,8 @@ class VOC(Dataset):
     def __init__(self,
                  data_dir: Path,
                  split="trainval",
-                 use_difficult=False):
+                 use_difficult=False,
+                 transform=None):
 
         id_list_file = data_dir / f"ImageSets/Main/{split}.txt"
 
@@ -29,15 +30,22 @@ class VOC(Dataset):
         self.image_dir = data_dir / "JPEGImages"
 
         self.use_difficult = use_difficult
+        self.transform = transform
 
     def __len__(self):
         return len(self.ids)
 
-    def __getitem__(self, item) -> ImageBbox:
+    def __getitem__(self, item):
         id_ = self.ids[item]
         bbox, label, difficult = self._annotations(id_)
         img = self._image(id_)
-        return ImageBbox(img, bbox, label, difficult)
+
+        img_bbox = ImageBbox(img, bbox, label, difficult)
+
+        if self.transform:
+            img_bbox = self.transform(img_bbox)
+
+        return img_bbox
 
     def _annotations(self, id_: str):
         xml = self.annot_dir / f"{id_}.xml"

@@ -1,6 +1,7 @@
 import torch
 from vision.image_bbox import ImageBbox
 from torchvision.transforms import Normalize
+import numpy as np
 
 
 class NormalizedTensor:
@@ -14,13 +15,15 @@ class NormalizedTensor:
         """ Convert ImageBbox to Dict of Tensors """
 
         # Normalize the data
-        data = torch.from_numpy(image.data)
+        # As contiguous to prevent negative stride error
+        data = torch.from_numpy(np.ascontiguousarray(image.data))
         data /= 255.
-        data = Normalize(mean=self.mean, std=self.std)
+        norm = Normalize(mean=self.mean, std=self.std)
+        data = norm(data)
 
         return {
             "image": data,
-            "bbox": torch.from_numpy(image.bbox),
+            "bbox": torch.from_numpy(np.ascontiguousarray(image.bbox)),
             "labels": torch.from_numpy(image.labels),
             "difficult": torch.from_numpy(image.difficult)
         }
