@@ -18,10 +18,10 @@ def train():
                           batch_size=1,
                           shuffle=True)
 
-    # No random flip for test dataset
+    # No random flip for tests dataset
     del transforms[1]
     test_dataset = VOC(data_dir,
-                       split="test",
+                       split="tests",
                        transform=Compose(transforms))
     test_dl = DataLoader(test_dataset,
                          batch_size=1,
