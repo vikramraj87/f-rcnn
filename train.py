@@ -4,6 +4,7 @@ from torchvision.transforms import Compose
 from vision.transforms.resize import Resize
 from vision.transforms.random_flip import RandomFlip
 from vision.transforms.normalized_tensor import NormalizedTensor
+from torch.utils.data import DataLoader
 
 def train():
     data_dir = Path("./data/VOCdevkit/VOC2007").resolve()
@@ -13,14 +14,18 @@ def train():
 
     train_dataset = VOC(data_dir,
                         transform=Compose(transforms))
+    train_dl = DataLoader(train_dataset,
+                          batch_size=1,
+                          shuffle=True)
 
     # No random flip for test dataset
     del transforms[1]
     test_dataset = VOC(data_dir,
                        split="test",
                        transform=Compose(transforms))
-
-
+    test_dl = DataLoader(test_dataset,
+                         batch_size=1,
+                         shuffle=True)
 
     sample = train_dataset[2]
     image = sample["image"]
@@ -33,7 +38,6 @@ def train():
     print(f"Bbox shape: {bbox.shape}")
     print(f"Labels shape: {label.shape}")
     print(f"Difficult shape: {difficult.shape}")
-
 
 
 if __name__ == '__main__':

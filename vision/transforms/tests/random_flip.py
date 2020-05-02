@@ -1,5 +1,5 @@
 import unittest
-from vision.transforms.random_flip import RandomFlip
+from ..random_flip import RandomFlip
 import numpy as np
 from numpy import testing
 
