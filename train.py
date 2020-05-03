@@ -6,6 +6,7 @@ from vision.transforms.random_flip import RandomFlip
 from vision.transforms.normalized_tensor import NormalizedTensor
 from torch.utils.data import DataLoader
 
+
 def train():
     data_dir = Path("./data/VOCdevkit/VOC2007").resolve()
     transforms = [Resize(600, 1000),
@@ -21,7 +22,7 @@ def train():
     # No random flip for tests dataset
     del transforms[1]
     test_dataset = VOC(data_dir,
-                       split="tests",
+                       split="test",
                        transform=Compose(transforms))
     test_dl = DataLoader(test_dataset,
                          batch_size=1,

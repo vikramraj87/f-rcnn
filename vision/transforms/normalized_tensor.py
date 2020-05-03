@@ -1,5 +1,5 @@
 import torch
-from vision.image_bbox import ImageBbox
+from ..image_bbox import ImageBbox
 from torchvision.transforms import Normalize
 import numpy as np
 

@@ -1,5 +1,5 @@
 import random
-from vision.image_bbox import ImageBbox
+from ..image_bbox import ImageBbox
 import numpy as np
 
 
