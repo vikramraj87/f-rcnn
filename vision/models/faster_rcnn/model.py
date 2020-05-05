@@ -37,8 +37,3 @@ class Model(nn.Module):
         _, _, rois, roi_ix = self.rpn(feats, img_size, scale)
         roi_locs, roi_scores = self.roi_head(feats, rois, roi_ix)
         return roi_locs, roi_scores, rois, roi_ix
-
-
-
-
-
