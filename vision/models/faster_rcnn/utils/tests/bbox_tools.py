@@ -76,7 +76,7 @@ class BBoxToolsTest(unittest.TestCase):
                    (100, 100, 300, 350)]
         boxes_b = np.array(boxes_b)
         ix = non_max_supression(boxes_b, 0.5)
-        self.assertListEqual(ix, [0, 1, 3, 4])
+        assert_almost_equal(ix, np.array([0, 1, 3, 4], dtype=np.int32))
 
 
 if __name__ == '__main__':

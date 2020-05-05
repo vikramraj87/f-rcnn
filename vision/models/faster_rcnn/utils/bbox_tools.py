@@ -256,4 +256,4 @@ def non_max_supression(boxes, threshold):
         keep.append(order[0])
         # since the 0th element is excluded and is 0th element vs rest
         order = order[filtered + 1]
-    return keep
+    return np.array(keep, dtype=np.int32)
