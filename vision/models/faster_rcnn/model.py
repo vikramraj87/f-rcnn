@@ -4,6 +4,13 @@ from .region_proposal_network import RegionProposalNetwork
 from .roi_head import ROIHead
 import numpy as np
 from .utils.bbox_tools import non_max_supression
+from .utils.device import device
+from .utils.array_tools import to_tensor, to_numpy
+from ...image_bbox import ImageBbox
+from ...transforms.resize import Resize
+from .utils.bbox_tools import from_offset_scale
+import torch
+
 
 
 class Model(nn.Module):
@@ -91,4 +98,66 @@ class Model(nn.Module):
 
     @no_grad()
     def predict(self, imgs, sizes=None, visualize=False):
-        raise NotImplementedError()
+        self.eval()
+        if visualize:
+            self.use_preset("visualize")
+            prepared_imgs = list()
+            sizes = list()
+            resize_tf = Resize()
+            for img in imgs:
+                size = img.shape[1:]
+                data = to_numpy(img)
+                resized = resize_tf(ImageBbox(data)).data
+                prepared_imgs.append(resized)
+
+                # FIXME: Check original implementation
+                # size should represent size after resize or original
+                sizes.append(size)
+        else:
+            prepared_imgs = imgs
+
+        bboxes = list()
+        labels = list()
+        scores = list()
+
+        for img, size in zip(prepared_imgs, sizes):
+            img = to_tensor(img[None]).float()
+            scale = img.shape[3] / size[1]
+
+            # Assumption: batch_size is 1
+            roi_locs, roi_scores, rois, _ = self(img, scale=scale)
+            roi_scores = roi_scores.detach().cpu()
+            roi_locs = roi_locs.detach().cpu()
+
+            rois = to_tensor(rois) / scale
+
+
+            # FIXME: Didn't normalize as in original implementation
+
+            rois = rois.view(-1, 1, 4).expand_as(roi_locs)
+            cls_bbox = from_offset_scale(to_numpy(rois).reshape((-1, 4)),
+                                         to_numpy(roi_locs).reshape(-1, 4))
+            cls_bbox = to_tensor(cls_bbox)
+            cls_bbox = cls_bbox.view(-1, self.n_class, 4)
+            cls_bbox[:, ::2] = torch.clamp(cls_bbox[:, ::2], 0, size[0])
+            cls_bbox[:, 1::2] = torch.clamp(cls_bbox[:, 1::2], 0, size[1])
+
+            prob = nn.functional.softmax(to_tensor(roi_scores), dim=1)
+            prob = to_numpy(prob)
+
+            raw_cls_bbox = to_numpy(cls_bbox)
+            raw_prob = to_numpy(prob)
+
+            bbox, label, score = self._supress(raw_cls_bbox, raw_prob)
+            bboxes.append(bbox)
+            labels.append(label)
+            scores.append(score)
+
+        self.use_preset("evaluate")
+        self.train()
+        return bboxes, labels, scores
+
+
+
+
+

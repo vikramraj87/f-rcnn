@@ -23,6 +23,10 @@ class Resize:
                       mode='reflect',
                       anti_aliasing=False)
 
+        if img.bbox is None:
+            img.data = data
+            return img
+
         boxes = self.resize_bbox(img.bbox,
                                  (height, width),
                                  (data.shape[1:]))

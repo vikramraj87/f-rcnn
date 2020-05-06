@@ -25,9 +25,10 @@ class ROIHead(nn.Module):
         """
 
         :param pooled_regions: (R, C, roi_size, roi_size)
-        :return: (n_class * 4), (n_class)
+        :return: (R, n_class * 4), (R, n_class)
         """
-        x = self.classifier(pooled_regions)
+        x = pooled_regions.view(pooled_regions.shape[0], -1)
+        x = self.classifier(x)
         locs = self.loc(x)
         scores = self.score(x)
         return locs, scores
